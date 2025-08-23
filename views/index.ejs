@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aquecedor WhatsApp</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bem vindo!</h1>
+            <p>Clique em adicionar Whatsapp, e escanei-e o QR-Code que aparecerá em breve.</p>
+            <button id="clear-cache-btn" onclick="clearCache()" class="clear-cache-btn">
+                🧹 Limpar Cache
+            </button>
+        </header>
+
+        <main class="main-layout">
+            <!-- Seção Esquerda - Números Conectados -->
+            <section class="numbers-section">
+                <div id="numbers-list">
+                    <!-- Números conectados aparecerão aqui -->
+                </div>
+                
+                <!-- Card de Controle de Conversas Automáticas -->
+                <div class="conversas-control">
+                    <h3>🔄 Conversas Automáticas</h3>
+                    <div class="saldo-info">
+                        <span>Saldo: <strong id="saldo-atual">0min</strong></span>
+                        <span>Status: <strong id="status-conversas">Parado</strong></span>
+                    </div>
+                    <div class="control-buttons">
+                        <button id="iniciar-conversas" class="control-btn iniciar-btn">▶️ Iniciar</button>
+                        <button id="parar-conversas" class="control-btn parar-btn" disabled>⏹️ Parar</button>
+                        <button id="adicionar-credito" class="control-btn credito-btn">💰 +1 Min</button>
+                    </div>
+                </div>
+                
+                <!-- Botão Adicionar WhatsApp -->
+                <button id="add-whatsapp-btn" onclick="showQRCode()" class="add-whatsapp-btn">
+                    <div class="btn-content">
+                        <div class="whatsapp-icon">📱</div>
+                        <div class="btn-text">
+                            <span class="plus-icon">+</span>
+                            <span>Adicionar Whatsapp</span>
+                        </div>
+                    </div>
+                </button>
+            </section>
+
+            <!-- Seção Direita - QR Code ou Conversas -->
+            <section class="qr-section">
+                <div id="qr-container" class="qr-container hidden">
+                    <div id="qr-code"></div>
+                    <p id="qr-status">Gerando QR Code...</p>
+                </div>
+                
+                <div id="conversations-container" class="conversations-container">
+                    <div class="phone-mockup">
+                        <div class="phone-screen">
+                            <div class="whatsapp-header">
+                                <span class="whatsapp-title">Whatsapp</span>
+                                <span class="status-text">Aquecendo...</span>
+                            </div>
+                            
+                            <!-- Tag "Aquecendo WhatsApp" dentro do celular -->
+                            <div id="heating-whatsapp" class="heating-whatsapp">
+                                <div class="rec-indicator"></div>
+                                <span>Aquecendo WhatsApp</span>
+                            </div>
+                            
+                            <div id="conversations-list" class="conversations-list">
+                                <!-- Conversas aparecerão aqui -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/app.js"></script>
+    <script src="/js/conversas.js"></script>
+</body>
+</html> 

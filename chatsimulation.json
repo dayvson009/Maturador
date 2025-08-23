@@ -1,0 +1,414 @@
+[
+  {
+    "id": 1,
+    "mensagem": "Oi! Tudo bem? Fiquei pensando no nosso projeto de trabalho. Já começou a rascunhar as ideias?"
+  },
+  {
+    "id": 2,
+    "mensagem": "Oi, Ana! Estou bem, e você? Comecei a pensar em algumas coisas sim. Acredito que o foco deve ser na otimização da interface."
+  },
+  {
+    "id": 3,
+    "mensagem": "Ótima ideia! A usabilidade é crucial. Que tal usarmos um 'framework' mais leve para o front-end?"
+  },
+  {
+    "id": 4,
+    "mensagem": "Concordo. O que você acha de 'Vue.js'? Ele é bem flexível para o que precisamos."
+  },
+  {
+    "id": 5,
+    "mensagem": "Perfeito! E para o 'back-end'? Estava pensando em 'Python' com 'Django' por causa da velocidade de desenvolvimento."
+  },
+  {
+    "id": 6,
+    "mensagem": "Pode ser. Mas 'Node.js' com 'Express' também seria uma boa opção, especialmente se quisermos algo mais leve. Que tal testarmos os dois?"
+  },
+  {
+    "id": 7,
+    "mensagem": "Fechado! Vamos fazer um pequeno protótipo com cada um. Podemos dividir as tarefas. Você cuida do 'Node.js' e eu do 'Python'?"
+  },
+  {
+    "id": 8,
+    "mensagem": "Combinado. E sobre o banco de dados? 'PostgreSQL' parece ser a melhor escolha pela robustez."
+  },
+  {
+    "id": 9,
+    "mensagem": "Sim, 'PostgreSQL' é o ideal. E a documentação? Precisamos de um repositório centralizado, tipo um 'Git'."
+  },
+  {
+    "id": 10,
+    "mensagem": "Já criei o repositório no 'GitHub' e te convidei. Aceita o convite lá!"
+  },
+  {
+    "id": 11,
+    "mensagem": "Vou aceitar agora! Obrigada."
+  },
+  {
+    "id": 12,
+    "mensagem": "Precisamos de um cronograma para as entregas parciais."
+  },
+  {
+    "id": 13,
+    "mensagem": "Verdade. O que você acha de definir as datas para cada 'milestone' do projeto?"
+  },
+  {
+    "id": 14,
+    "mensagem": "Ótimo. Podemos usar o 'GitHub Projects' para isso."
+  },
+  {
+    "id": 15,
+    "mensagem": "Certo. Manda o link depois."
+  },
+  {
+    "id": 16,
+    "mensagem": "Ok. Mais alguma coisa?"
+  },
+  {
+    "id": 17,
+    "mensagem": "Não, por enquanto. Acho que temos um bom plano inicial."
+  },
+  {
+    "id": 18,
+    "mensagem": "Perfeito. Mãos à obra!"
+  },
+  {
+    "id": 19,
+    "mensagem": "Até mais!"
+  },
+  {
+    "id": 20,
+    "mensagem": "Até!"
+  },
+  {
+    "id": 21,
+    "mensagem": "Estou com uma dúvida sobre a estrutura do banco de dados. Podemos conversar?"
+  },
+  {
+    "id": 22,
+    "mensagem": "Claro. Qual a dúvida?"
+  },
+  {
+    "id": 23,
+    "mensagem": "Será que criamos uma tabela de 'usuários' separada para o login ou usamos a tabela de 'clientes' existente?"
+  },
+  {
+    "id": 24,
+    "mensagem": "É melhor ter uma tabela de 'usuários' separada. Isso nos dá mais flexibilidade para adicionar permissões e papéis no futuro."
+  },
+  {
+    "id": 25,
+    "mensagem": "Faz sentido. E sobre a autenticação? Pensou em algo?"
+  },
+  {
+    "id": 26,
+    "mensagem": "Pensei em usar JWT. É seguro e escalável."
+  },
+  {
+    "id": 27,
+    "mensagem": "Boa. E os testes? Já pensou em como vamos fazer?"
+  },
+  {
+    "id": 28,
+    "mensagem": "Vamos usar 'Jest' para os testes de unidade e 'Cypress' para os de integração."
+  },
+  {
+    "id": 29,
+    "mensagem": "Perfeito. Estou anotando tudo."
+  },
+  {
+    "id": 30,
+    "mensagem": "Criei um documento no repositório para a gente ir registrando todas as decisões."
+  },
+  {
+    "id": 31,
+    "mensagem": "Ótimo. Vou dar uma olhada. Obrigada!"
+  },
+  {
+    "id": 32,
+    "mensagem": "De nada. Vamos nos falando."
+  },
+  {
+    "id": 33,
+    "mensagem": "Oi, Bruno. Vi que você fez o 'push' da sua parte. Ficou ótimo!"
+  },
+  {
+    "id": 34,
+    "mensagem": "Obrigado, Ana! A sua também. A integração está funcionando perfeitamente."
+  },
+  {
+    "id": 35,
+    "mensagem": "Que bom! Estou feliz com o progresso."
+  },
+  {
+    "id": 36,
+    "mensagem": "Eu também. Nossa próxima tarefa é a tela de 'dashboard'."
+  },
+  {
+    "id": 37,
+    "mensagem": "Certo. Que tipo de informação você acha que deve ter lá?"
+  },
+  {
+    "id": 38,
+    "mensagem": "Dados de uso, estatísticas e um resumo das atividades recentes."
+  },
+  {
+    "id": 39,
+    "mensagem": "Combinado. Vou começar a desenhar a interface."
+  },
+  {
+    "id": 40,
+    "mensagem": "Perfeito. Depois me mostra. Até!"
+  },
+  {
+    "id": 41,
+    "mensagem": "Até!"
+  },
+  {
+    "id": 42,
+    "mensagem": "Opa, Ana. Esqueci de te perguntar uma coisa..."
+  },
+  {
+    "id": 43,
+    "mensagem": "Pode falar."
+  },
+  {
+    "id": 44,
+    "mensagem": "Precisamos definir o nome do projeto."
+  },
+  {
+    "id": 45,
+    "mensagem": "Ah, sim! Que tal 'Inovatech'?"
+  },
+  {
+    "id": 46,
+    "mensagem": "Gostei! 'Inovatech'. É simples e direto."
+  },
+  {
+    "id": 47,
+    "mensagem": "E se a gente pensar num logo também?"
+  },
+  {
+    "id": 48,
+    "mensagem": "Vamos focar no código primeiro. Depois, a gente cuida do design."
+  },
+  {
+    "id": 49,
+    "mensagem": "Você está certo. Foco no 'core' do projeto."
+  },
+  {
+    "id": 50,
+    "mensagem": "Exato."
+  },
+  {
+    "id": 51,
+    "mensagem": "Bruno, estou com um problema no 'login'."
+  },
+  {
+    "id": 52,
+    "mensagem": "O que está acontecendo?"
+  },
+  {
+    "id": 53,
+    "mensagem": "A requisição está retornando um erro '500'. Não consigo identificar a causa."
+  },
+  {
+    "id": 54,
+    "mensagem": "Olhou o 'log' do servidor?"
+  },
+  {
+    "id": 55,
+    "mensagem": "Sim. 'Erro interno do servidor', mas sem mais detalhes."
+  },
+  {
+    "id": 56,
+    "mensagem": "Você pode me dar acesso à sua máquina por 'TeamViewer'?"
+  },
+  {
+    "id": 57,
+    "mensagem": "Claro. Vou te mandar o ID e a senha."
+  },
+  {
+    "id": 58,
+    "mensagem": "Ok. Estou esperando."
+  },
+  {
+    "id": 59,
+    "mensagem": "Pronto. Enviei."
+  },
+  {
+    "id": 60,
+    "mensagem": "Estou me conectando."
+  },
+  {
+    "id": 61,
+    "mensagem": "Conseguiu ver o problema?"
+  },
+  {
+    "id": 62,
+    "mensagem": "Achei. É uma falha na conexão com o banco de dados."
+  },
+  {
+    "id": 63,
+    "mensagem": "Sério? Mas as credenciais estão corretas."
+  },
+  {
+    "id": 64,
+    "mensagem": "O 'firewall' está bloqueando a porta. Precisa abrir."
+  },
+  {
+    "id": 65,
+    "mensagem": "Ah! Não tinha pensado nisso. Obrigada!"
+  },
+  {
+    "id": 66,
+    "mensagem": "De nada. Agora você já sabe para a próxima vez."
+  },
+  {
+    "id": 67,
+    "mensagem": "Sim. Muito obrigada por me ajudar. Estou aprendendo muito."
+  },
+  {
+    "id": 68,
+    "mensagem": "É pra isso que serve a parceria! Fico feliz em ajudar."
+  },
+  {
+    "id": 69,
+    "mensagem": "Que bom! Tenha um ótimo dia, Bruno."
+  },
+  {
+    "id": 70,
+    "mensagem": "Pra você também, Ana. Até amanhã."
+  },
+  {
+    "id": 71,
+    "mensagem": "Bruno, vi que o 'push' que você fez tem um erro. Aparentemente um problema de merge."
+  },
+  {
+    "id": 72,
+    "mensagem": "Sério? Puxa, desculpe. Deixei passar."
+  },
+  {
+    "id": 73,
+    "mensagem": "Tudo bem! Já arrumei. Só para você ficar sabendo."
+  },
+  {
+    "id": 74,
+    "mensagem": "Agradeço. Vou tomar mais cuidado na próxima vez."
+  },
+  {
+    "id": 75,
+    "mensagem": "Combinado. E sobre a tela de 'dashboard', o que você achou do 'layout'?"
+  },
+  {
+    "id": 76,
+    "mensagem": "Achei bem clean e intuitivo. Ficou ótimo!"
+  },
+  {
+    "id": 77,
+    "mensagem": "Obrigada! A gente pode adicionar mais algumas 'features' depois, tipo um gráfico de uso em tempo real."
+  },
+  {
+    "id": 78,
+    "mensagem": "Com certeza! Vamos deixar isso na lista de 'backlog'."
+  },
+  {
+    "id": 79,
+    "mensagem": "Feito! Estou animada para terminar esse projeto."
+  },
+  {
+    "id": 80,
+    "mensagem": "Eu também! Estamos no caminho certo."
+  },
+  {
+    "id": 81,
+    "mensagem": "Que bom. Até mais."
+  },
+  {
+    "id": 82,
+    "mensagem": "Até!"
+  },
+  {
+    "id": 83,
+    "mensagem": "Precisamos definir a política de 'deploy'."
+  },
+  {
+    "id": 84,
+    "mensagem": "Pensei em usar 'Docker' e 'Kubernetes'."
+  },
+  {
+    "id": 85,
+    "mensagem": "Parece uma boa ideia. E a hospedagem?"
+  },
+  {
+    "id": 86,
+    "mensagem": "Acho que a 'AWS' é a melhor opção, pela escalabilidade."
+  },
+  {
+    "id": 87,
+    "mensagem": "Concordo. É a melhor plataforma para o nosso caso."
+  },
+  {
+    "id": 88,
+    "mensagem": "Vamos criar um documento para detalhar o 'CI/CD'?"
+  },
+  {
+    "id": 89,
+    "mensagem": "Sim, por favor. Isso vai ajudar muito na automação."
+  },
+  {
+    "id": 90,
+    "mensagem": "Perfeito. Vou começar a rascunhar."
+  },
+  {
+    "id": 91,
+    "mensagem": "Obrigada, Bruno!"
+  },
+  {
+    "id": 92,
+    "mensagem": "De nada, Ana. Vamos manter o foco."
+  },
+  {
+    "id": 93,
+    "mensagem": "Exato."
+  },
+  {
+    "id": 94,
+    "mensagem": "Ana, o que achou da 'pull request' que eu abri?"
+  },
+  {
+    "id": 95,
+    "mensagem": "Já vi! Está muito boa. Fiz algumas pequenas sugestões."
+  },
+  {
+    "id": 96,
+    "mensagem": "Vou dar uma olhada e fazer as alterações."
+  },
+  {
+    "id": 97,
+    "mensagem": "Fechado. Se precisar de ajuda, é só chamar."
+  },
+  {
+    "id": 98,
+    "mensagem": "Obrigado! Fico feliz com a sua colaboração."
+  },
+  {
+    "id": 99,
+    "mensagem": "Igualmente!"
+  },
+  {
+    "id": 100,
+    "mensagem": "Vamos continuar assim."
+  },
+  {
+    "id": 101,
+    "mensagem": "Sim. Vamos! Esse projeto vai ser um sucesso."
+  },
+  {
+    "id": 102,
+    "mensagem": "Com certeza!"
+  },
+  {
+    "id": 103,
+    "mensagem": "Até mais!"
+  }
+]
