@@ -440,14 +440,36 @@ class WhatsAppService {
     }
 
     try {
-      const chatId = to.includes('@c.us') ? to : `${to}@c.us`;
+      // Corrigir número de destino: adicionar 9 se necessário
+      let numeroDestino = to;
+      
+      // Se o número tem 12 dígitos (55 + DDD + 9 dígitos), está correto
+      // Se tem 11 dígitos (55 + DDD + 8 dígitos), adicionar 9
+      if (numeroDestino.length === 12) { // 55 + DDD + 9 dígitos
+        // Número já está correto
+        console.log(`📱 Número de destino já tem formato correto: ${numeroDestino}`);
+      } else if (numeroDestino.length === 11) { // 55 + DDD + 8 dígitos
+        // Adicionar 9 após o DDD
+        const codpais = numeroDestino.substring(0, 2);
+        const ddd = numeroDestino.substring(2, 4);
+        const numero = numeroDestino.substring(4);
+        
+        numeroDestino = `${codpais}${ddd}9${numero}`;
+        console.log(`📱 Número corrigido: ${to} -> ${numeroDestino} (9 adicionado)`);
+      } else {
+        console.log(`⚠️ Formato de número inválido: ${numeroDestino} (${numeroDestino.length} dígitos)`);
+      }
+      
+      const chatId = numeroDestino.includes('@c.us') ? numeroDestino : `${numeroDestino}@c.us`;
+      console.log(`📤 Enviando mensagem para: ${chatId}`);
+      
       const result = await client.sendMessage(chatId, message);
       
-      // Não atualizar conversas para manter performance
-      // As conversas demo são estáticas e rápidas
+      console.log(`✅ Mensagem enviada com sucesso para ${numeroDestino}`);
       
       return { success: true, messageId: result.id._serialized };
     } catch (error) {
+      console.error(`❌ Erro ao enviar mensagem para ${numeroDestino}:`, error);
       throw new Error(`Erro ao enviar mensagem: ${error.message}`);
     }
   }

@@ -191,9 +191,11 @@ class ConversasService {
                 } else {
                     // Para dispositivos reais, enviar mensagem via WhatsApp
                     const resultado = await whatsappService.sendMessage(
-                        browserId,
-                        numeroDestino,
-                        mensagem.mensagem
+                        // Extrair codpais, ddd e numero do número de origem (conversa.numero)
+                        ...this.extrairComponentesNumero(conversa.numero),
+                        numeroDestino, // número de destino
+                        mensagem.mensagem, // mensagem
+                        browserId // browserId do cliente
                     );
                     
                     if (resultado.success) {
