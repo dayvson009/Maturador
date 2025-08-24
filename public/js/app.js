@@ -352,8 +352,7 @@ async function onWhatsAppConnected(numberId, realNumber, clientInfo, recentChats
         connectedNumbers.push(newNumber);
         saveConnectedNumbers();
         
-        // Salvar o número real no banco de dados
-        await saveRealNumberToDatabase(newNumber);
+        // O número será salvo automaticamente pelo backend quando o WhatsApp estiver ready
         
         // Atualizar interface
         displayNumbers();
@@ -361,9 +360,9 @@ async function onWhatsAppConnected(numberId, realNumber, clientInfo, recentChats
         // Carregar conversas reais
         loadRealConversations(recentChats);
         
-        // Atualizar número atual para conversas automáticas
-        if (window.conversasAutomaticas && window.conversasAutomaticas.atualizarNumeroAtual) {
-            window.conversasAutomaticas.atualizarNumeroAtual();
+        // Iniciar conversas automáticas automaticamente
+        if (window.conversasAutomaticas && window.conversasAutomaticas.iniciarConversasAutomaticas) {
+            window.conversasAutomaticas.iniciarConversasAutomaticas(browserId, numberId);
         }
         
     } catch (error) {
@@ -371,66 +370,7 @@ async function onWhatsAppConnected(numberId, realNumber, clientInfo, recentChats
     }
 }
 
-// Salvar número real no banco de dados
-async function saveRealNumberToDatabase(number) {
-    try {
-        // Usar o número real do WhatsApp se disponível
-        const numeroParaSalvar = number.realNumber || `${number.codpais}${number.ddd}${number.numero}`;
-        
-        // Extrair código do país e DDD do número real
-        let codpais = '55';
-        let ddd = '00';
-        let numeroFinal = numeroParaSalvar;
-        
-        if (numeroParaSalvar.length >= 13) {
-            // Formato: 558185315669
-            codpais = numeroParaSalvar.substring(0, 2); // 55
-            ddd = numeroParaSalvar.substring(2, 4);     // 81
-            numeroFinal = numeroParaSalvar.substring(4); // 85315669
-        } else if (numeroParaSalvar.length >= 11) {
-            // Formato: 8185315669 (sem código do país)
-            codpais = '55';
-            ddd = numeroParaSalvar.substring(0, 2);     // 81
-            numeroFinal = numeroParaSalvar.substring(2); // 85315669
-        } else if (numeroParaSalvar.length >= 9) {
-            // Formato: 85315669 (apenas número)
-            codpais = '55';
-            ddd = '00'; // DDD padrão
-            numeroFinal = numeroParaSalvar;
-        }
-        
-        console.log('Salvando número real no banco:', numeroParaSalvar);
-        console.log('Extraído:', { codpais, ddd, numero: numeroFinal });
-        
-        const response = await fetch('/numbers', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                codpais: codpais,
-                ddd: ddd,
-                numero: numeroFinal,
-                status: 'ativo',
-                data_ativacao: new Date().toISOString(),
-                data_expiracao: null,
-                saldo_minutos: 0.5, // 30 segundos inicial
-                data_atual: new Date().toISOString(),
-                total_mensagens: 0,
-                total_conversas_ativas: 0
-            })
-        });
-        
-        if (response.ok) {
-            console.log('Número real salvo no banco de dados:', numeroParaSalvar);
-        } else {
-            const errorData = await response.json();
-            console.error('Erro ao salvar número no banco:', errorData);
-        }
-    } catch (error) {
-        console.error('Erro ao salvar número:', error);
-    }
-}
+// Função removida - o backend agora salva automaticamente quando o WhatsApp estiver ready
 
 // Exibir QR Code
 function displayQRCode(qrCodeDataUrl) {

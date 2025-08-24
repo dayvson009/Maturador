@@ -161,6 +161,16 @@ class WhatsAppService {
         const realNumber = clientInfo.wid.user; // Número sem @c.us
         console.log(`Número real do WhatsApp: ${realNumber}`);
         
+        // Extrair codpais, ddd e numero do número real
+        let codpais = realNumber.substring(0, 2);
+        let ddd = realNumber.substring(2, 4);
+        let numero = realNumber.substring(4);
+        
+        console.log(`Extraindo: codpais=${codpais}, ddd=${ddd}, numero=${numero}`);
+        
+        // Salvar automaticamente no banco de dados
+        await this.saveNumberToDatabase(codpais, ddd, numero, realNumber, browserId);
+        
         // Conversas demo embutidas para renderização rápida
         const demoChats = [
           { id: 'demo1', name: 'João Silva', lastMessage: 'Olá! Como vai?', status: 'MOBILE', isGroup: false },
@@ -254,6 +264,14 @@ class WhatsAppService {
             // Obter informações do cliente
             const clientInfo = client.info;
             const realNumber = clientInfo.wid.user;
+            
+            // Extrair codpais, ddd e numero do número real
+            let codpais = realNumber.substring(0, 2);
+            let ddd = realNumber.substring(2, 4);
+            let numero = realNumber.substring(4);
+            
+            // Salvar no banco automaticamente
+            await this.saveNumberToDatabase(codpais, ddd, numero, realNumber, browserId);
             
             // Conversas demo para renderização rápida
             const demoChats = [
@@ -484,6 +502,117 @@ class WhatsAppService {
       });
     }
     return activeClients;
+  }
+
+  // Salvar número no banco de dados automaticamente
+  async saveNumberToDatabase(codpais, ddd, numero, realNumber, browserId) {
+    try {
+      console.log(`Salvando número no banco: ${codpais}${ddd}${numero} (real: ${realNumber})`);
+      
+      // Importar pool do banco
+      const pool = require('../models/db');
+      
+      // Verificar se o número já existe
+      const checkQuery = `
+        SELECT codpais, ddd, numero, status, saldo_minutos 
+        FROM numbers 
+        WHERE codpais = $1 AND ddd = $2 AND numero = $3
+      `;
+      
+      const checkResult = await pool.query(checkQuery, [codpais, ddd, numero]);
+      
+      if (checkResult.rows.length > 0) {
+          // Número já existe, atualizar status para ativo
+          const updateQuery = `
+            UPDATE numbers 
+            SET status = 'ativo', 
+                data_atual = NOW()
+            WHERE codpais = $1 AND ddd = $2 AND numero = $3
+          `;
+          
+          await pool.query(updateQuery, [codpais, ddd, numero]);
+          console.log(`Número ${codpais}${ddd}${numero} atualizado no banco`);
+          
+          // Verificar se deve iniciar conversas automáticas
+          await this.checkAndStartConversations(codpais, ddd, numero, browserId);
+          
+        } else {
+          // Número não existe, inserir novo com saldo de 0.5
+          const insertQuery = `
+            INSERT INTO numbers (codpais, ddd, numero, status, saldo_minutos, data_ativacao, data_atual)
+            VALUES ($1, $2, $3, 'ativo', 0.5, NOW(), NOW())
+          `;
+          
+          await pool.query(insertQuery, [codpais, ddd, numero]);
+          console.log(`Novo número ${codpais}${ddd}${numero} inserido no banco com saldo 0.5`);
+          
+          // Iniciar conversas automáticas para novo número
+          await this.checkAndStartConversations(codpais, ddd, numero, browserId);
+        }
+      
+      return { success: true };
+      
+    } catch (error) {
+      console.error('Erro ao salvar número no banco:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Verificar e iniciar conversas automáticas
+  async checkAndStartConversations(codpais, ddd, numero, browserId) {
+    try {
+      console.log(`Verificando se deve iniciar conversas para ${codpais}${ddd}${numero}`);
+      
+      // VERIFICAÇÃO 1: Banco de dados - números ativos com saldo
+      const pool = require('../models/db');
+      const checkQuery = `
+        SELECT COUNT(*) as total_ativos
+        FROM numbers 
+        WHERE status = 'ativo' 
+        AND saldo_minutos > 0
+        AND (codpais != $1 OR ddd != $2 OR numero != $3)
+      `;
+      
+      const result = await pool.query(checkQuery, [codpais, ddd, numero]);
+      const totalAtivosBanco = parseInt(result.rows[0].total_ativos);
+      
+      console.log(`Total de números ativos no banco: ${totalAtivosBanco}`);
+      
+      // VERIFICAÇÃO 2: Clientes WhatsApp realmente conectados
+      const clientesConectados = this.getActiveClients();
+      const totalClientesConectados = clientesConectados.length;
+      
+      console.log(`Total de clientes WhatsApp conectados: ${totalClientesConectados}`);
+      console.log('Clientes conectados:', clientesConectados);
+      
+      // LÓGICA: Só inicia conversas se houver AMBAS as condições
+      if (totalAtivosBanco > 0 && totalClientesConectados > 1) {
+        // ✅ Há outros números ativos NO BANCO E mais de 1 cliente CONECTADO
+        console.log(`✅ Condições atendidas: ${totalAtivosBanco} números ativos no banco + ${totalClientesConectados} clientes conectados`);
+        console.log(`🚀 Iniciando conversas automáticas para ${codpais}${ddd}${numero}`);
+        
+        // Importar e usar o serviço de conversas
+        const conversasService = require('./conversas');
+        const success = await conversasService.iniciarConversasParaDispositivo(browserId, `${codpais}${ddd}${numero}`);
+        
+        if (success) {
+          console.log(`✅ Conversas automáticas iniciadas com sucesso para ${codpais}${ddd}${numero}`);
+        } else {
+          console.log(`❌ Falha ao iniciar conversas automáticas para ${codpais}${ddd}${numero}`);
+        }
+      } else {
+        // ❌ Não atende às condições
+        if (totalAtivosBanco === 0) {
+          console.log(`❌ Conversas não iniciadas: Apenas um número ativo no banco de dados`);
+        } else if (totalClientesConectados <= 1) {
+          console.log(`❌ Conversas não iniciadas: Apenas ${totalClientesConectados} cliente(s) WhatsApp conectado(s)`);
+        }
+        console.log(`📊 Resumo: ${totalAtivosBanco} números ativos no banco + ${totalClientesConectados} clientes conectados`);
+      }
+      
+    } catch (error) {
+      console.error('Erro ao verificar/iniciar conversas automáticas:', error);
+    }
   }
 }
 
