@@ -173,6 +173,7 @@ class ConversasService {
     // Enviar mensagem específica
     async enviarMensagem(browserId, mensagemId) {
         const conversa = this.conversasAtivas.get(browserId);
+        console.timeLog("CONVERSA>>>:",conversa)
         if (!conversa || !this.mensagens[mensagemId]) return;
 
         const mensagem = this.mensagens[mensagemId];
@@ -190,9 +191,12 @@ class ConversasService {
                     console.log(`📱 [SIMULADO] Mensagem ${mensagemId} de ${conversa.numero} para ${numeroDestino}: ${mensagem.mensagem}`);
                 } else {
                     // Para dispositivos reais, enviar mensagem via WhatsApp
+                    const { codpais, ddd, numero: num } = this.extrairComponentesNumero(conversa.numero);
                     const resultado = await whatsappService.sendMessage(
                         // Extrair codpais, ddd e numero do número de origem (conversa.numero)
-                        ...this.extrairComponentesNumero(conversa.numero),
+                        codpais,
+                        ddd,
+                        num,
                         numeroDestino, // número de destino
                         mensagem.mensagem, // mensagem
                         browserId // browserId do cliente

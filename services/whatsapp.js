@@ -428,6 +428,8 @@ class WhatsAppService {
 
   // Envia mensagem de texto
   async sendMessage(codpais, ddd, numero, to, message, browserId) {
+
+    console.log(`ENVIANDO MENSAGEM: COD_PAÍS ${codpais}, DDD ${ddd}, NUMERO ${numero}, PARA (TO) ${to}, Messagem ${message}, browserId ${browserId}`)
     const numberKey = `${codpais}${ddd}${numero}`;
     const client = this.clients.get(browserId);
     
@@ -435,7 +437,8 @@ class WhatsAppService {
       throw new Error('Cliente não encontrado');
     }
 
-    if (!client.isConnected) {
+    // Com NoAuth, isConnected pode não refletir corretamente; usar heurística de cliente não destruído
+    if (!this.isConnected(browserId)) {
       throw new Error('Cliente não está conectado');
     }
 
@@ -518,9 +521,11 @@ class WhatsAppService {
   getActiveClients() {
     const activeClients = [];
     for (const [browserId, client] of this.clients) {
+      // Considerar conectado se o cliente existir e não estiver destruído
+      const connected = client && !client.destroyed;
       activeClients.push({
         browserId: browserId,
-        connected: client.isConnected
+        connected
       });
     }
     return activeClients;

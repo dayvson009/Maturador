@@ -339,7 +339,7 @@ router.get('/saldo/:numero', async (req, res) => {
 // POST /sendmessage - Enviar mensagem de teste
 router.post('/sendmessage', async (req, res) => {
     try {
-        const { from, to, message } = req.body;
+        const { from, to, message, browserId } = req.body;
         
         if (!from || !to || !message) {
             return res.status(400).json({
@@ -348,7 +348,7 @@ router.post('/sendmessage', async (req, res) => {
             });
         }
         
-        console.log(`📤 Teste de envio: ${from} -> ${to}: ${message}`);
+        console.log(`📤 Teste de envio: ${from} -> ${to}: ${message}, Client: ${browserId}`);
         
         // Importar o WhatsAppService
         const whatsappService = require('../services/whatsapp');
@@ -364,7 +364,8 @@ router.post('/sendmessage', async (req, res) => {
         }
         
         // Usar o primeiro cliente ativo
-        const browserId = clientesAtivos[0].browserId;
+        console.log(clientesAtivos)
+        // const browserId = clientesAtivos[0].browserId;
         
         // Extrair componentes do número de origem
         const fromComponents = extrairComponentesNumero(from);
