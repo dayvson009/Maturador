@@ -22,6 +22,21 @@ class ConversasService {
         return { codpais, ddd, numero: num };
     }
 
+    // Normalizar para o número real do WhatsApp (wid.user) quando vier id de sessão
+    normalizarNumeroReal(browserId, numero) {
+        try {
+            if (typeof numero === 'string' && numero.startsWith('5500')) {
+                const real = whatsappService.getRealNumber(browserId);
+                if (real && /^\d{12}$/.test(real)) {
+                    return real;
+                }
+            }
+        } catch (e) {
+            console.warn('Falha ao normalizar número real:', e?.message || e);
+        }
+        return numero;
+    }
+
     // Carregar mensagens do JSON
     async carregarMensagens() {
         try {
@@ -58,6 +73,12 @@ class ConversasService {
     async iniciarConversasParaDispositivo(browserId, numero) {
         try {
             console.log('Iniciando conversas para dispositivo:', browserId, numero);
+            // Normalizar número: garantir que é o número real (wid.user) e não o id de sessão
+            const numeroNormalizado = this.normalizarNumeroReal(browserId, numero);
+            if (numero !== numeroNormalizado) {
+                console.log(`[Normalização] Número de sessão detectado. Normalizando ${numero} -> ${numeroNormalizado}`);
+            }
+            numero = numeroNormalizado;
             console.log('Dispositivos ativos:', this.conversasAtivas);
             // Verificar se já tem conversas ativas
             if (this.conversasAtivas.has(browserId)) {
@@ -73,29 +94,27 @@ class ConversasService {
                 return false;
             }
 
-            // Selecionar até 3 outros dispositivos ativos
+            // Selecionar até 3 outros dispositivos ativos E conectados no sistema
             const dispositivosAtivos = await this.verificarDispositivosAtivos();
-            console.log('Dispositivos ativos services conversas.js:', dispositivosAtivos);
-            const outrosDispositivos = dispositivosAtivos.filter(d => 
-                `${d.codpais}${d.ddd}${d.numero}` !== numero
-            ).slice(0, 3);
+            const conectados = whatsappService.getConnectedNumbers().map(c => c.realNumber);
+            console.log('Dispositivos ativos (DB):', dispositivosAtivos);
+            console.log('Números conectados (Runtime):', conectados);
+            const outrosDispositivos = dispositivosAtivos
+                .filter(d => `${d.codpais}${d.ddd}${d.numero}` !== numero)
+                .filter(d => conectados.includes(`${d.codpais}${d.ddd}${d.numero}`))
+                .slice(0, 3);
 
-            // Se não há outros dispositivos, criar conversas simuladas
-            let dispositivosParaConversar = outrosDispositivos;
+            // Se não há outros dispositivos conectados, não iniciar conversas
             if (outrosDispositivos.length === 0) {
-                console.log(`Nenhum dispositivo disponível para conversar com ${numero}, criando conversas simuladas`);
-                dispositivosParaConversar = [
-                    { codpais: '55', ddd: '11', numero: '999999999', saldo_minutos: 10 },
-                    { codpais: '55', ddd: '11', numero: '888888888', saldo_minutos: 10 },
-                    { codpais: '55', ddd: '11', numero: '777777777', saldo_minutos: 10 }
-                ];
+                console.log(`Nenhum dispositivo CONECTADO disponível para conversar com ${numero}. Abortando início de conversas.`);
+                return false;
             }
 
             // Criar conversa
             const conversa = {
                 browserId,
                 numero,
-                dispositivos: dispositivosParaConversar,
+                dispositivos: outrosDispositivos,
                 mensagemAtual: 0,
                 ativo: true
             };
@@ -222,7 +241,7 @@ class ConversasService {
             console.log(`Verificando saldo para número: ${numero}`);
             
             const { codpais, ddd, numero: num } = this.extrairComponentesNumero(numero);
-
+            console.log(codpais, ddd, num)
             const query = `
                 SELECT saldo_minutos 
                 FROM numbers 

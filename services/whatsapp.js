@@ -404,6 +404,31 @@ class WhatsAppService {
     return this.qrCodes.get(browserId) || null;
   }
 
+  // Obtém o número real (wid.user) do cliente, se disponível
+  getRealNumber(browserId) {
+    const client = this.clients.get(browserId);
+    try {
+      const real = client && client.info && client.info.wid && client.info.wid.user;
+      return real || null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // Lista números reais conectados no sistema
+  getConnectedNumbers() {
+    const connected = [];
+    for (const [browserId, client] of this.clients) {
+      if (client && !client.destroyed) {
+        const real = this.getRealNumber(browserId);
+        if (real) {
+          connected.push({ browserId, realNumber: real });
+        }
+      }
+    }
+    return connected;
+  }
+
   // Verifica se um cliente está conectado
   isConnected(browserId) {
     console.log(`[isConnected] Verificando browserId: ${browserId}`);
