@@ -65,6 +65,11 @@ app.use(numbersRouter);
 app.use(whatsappRouter);
 app.use('/conversas', conversasRouter);
 
+const whatsappService = require('./services/whatsapp');
+const conversasService = require('./services/conversas');
+
+conversasService.setWhatsappService(whatsappService);
+
 // Endpoint para obter browserId da sessão
 app.get('/api/browser-id', (req, res) => {
   res.json({ browserId: req.session.browserId });

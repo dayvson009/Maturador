@@ -3,15 +3,20 @@ const path = require('path');
 const pool = require('../models/db');
 const whatsappService = require('./whatsapp');
 
-class ConversasService {
 
+class ConversasService {
+    
     // Inicialização do serviço
     constructor() {
         this.conversasAtivas = new Map(); // browserId -> conversa
         this.mensagens = []; // chatsimulation.json
         this.intervalos = new Map(); // browserId -> setInterval
     }
-
+    
+    setWhatsappService(service) {
+        this.whatsappService = service;
+    }
+    
     // Função utilitária para extrair código do país, DDD e número
     extrairComponentesNumero(numero) {
         let codpais = numero.substring(0, 2);
@@ -26,7 +31,7 @@ class ConversasService {
     normalizarNumeroReal(browserId, numero) {
         try {
             if (typeof numero === 'string' && numero.startsWith('5500')) {
-                const real = whatsappService.getRealNumber(browserId);
+                const real = this.whatsappService.getRealNumber(browserId);
                 if (real && /^\d{12}$/.test(real)) {
                     return real;
                 }
@@ -66,6 +71,8 @@ class ConversasService {
         } catch (error) {
             console.error('Erro ao verificar dispositivos ativos:', error);
             return [];
+        } finally {
+            client.release(); // <-- LIBERAR SEMPRE
         }
     }
 
@@ -96,7 +103,7 @@ class ConversasService {
 
             // Selecionar até 3 outros dispositivos ativos E conectados no sistema
             const dispositivosAtivos = await this.verificarDispositivosAtivos();
-            const conectados = whatsappService.getConnectedNumbers().map(c => c.realNumber);
+            const conectados = this.whatsappService.getConnectedNumbers().map(c => c.realNumber);
             console.log('Dispositivos ativos (DB):', dispositivosAtivos);
             console.log('Números conectados (Runtime):', conectados);
             const outrosDispositivos = dispositivosAtivos
@@ -116,6 +123,7 @@ class ConversasService {
                 numero,
                 dispositivos: outrosDispositivos,
                 mensagemAtual: 0,
+                targetIndex: 0,
                 ativo: true
             };
 
@@ -127,7 +135,7 @@ class ConversasService {
             // Atualizar total_conversas_ativas no banco
             await this.atualizarConversasAtivas(numero, 1);
 
-            console.log(`Conversas iniciadas para ${numero} com ${dispositivosParaConversar.length} dispositivos`);
+            console.log(`Conversas iniciadas para ${numero} com ${outrosDispositivos.length} dispositivos`);
             return true;
 
         } catch (error) {
@@ -177,14 +185,15 @@ class ConversasService {
         // Primeira mensagem imediata
         enviarMensagem();
 
-        // Configurar intervalo
+        // Configurar intervalo (3 a 10 segundos)
         const intervalo = setInterval(async () => {
             if (!conversa.ativo) {
                 clearInterval(intervalo);
                 return;
             }
             await enviarMensagem();
-        }, (Math.floor(Math.random() * 10) + 1) * 1000); // 1-10 segundos
+        }, (Math.floor(Math.random() * 60) + 30) * 1000); // 30-90 segundos
+
 
         this.intervalos.set(browserId, intervalo);
     }
@@ -192,45 +201,115 @@ class ConversasService {
     // Enviar mensagem específica
     async enviarMensagem(browserId, mensagemId) {
         const conversa = this.conversasAtivas.get(browserId);
-        console.timeLog("CONVERSA>>>:",conversa)
         if (!conversa || !this.mensagens[mensagemId]) return;
 
         const mensagem = this.mensagens[mensagemId];
-        
-        // Enviar para cada dispositivo da conversa
-        for (const dispositivo of conversa.dispositivos) {
-            try {
-                const numeroDestino = `${dispositivo.codpais}${dispositivo.ddd}${dispositivo.numero}`;
-                
-                // Verificar se é um dispositivo simulado (números fictícios)
-                const isSimulado = ['999999999', '888888888', '777777777'].includes(dispositivo.numero);
-                
-                if (isSimulado) {
-                    // Para dispositivos simulados, apenas logar
-                    console.log(`📱 [SIMULADO] Mensagem ${mensagemId} de ${conversa.numero} para ${numeroDestino}: ${mensagem.mensagem}`);
-                } else {
-                    // Para dispositivos reais, enviar mensagem via WhatsApp
-                    const { codpais, ddd, numero: num } = this.extrairComponentesNumero(conversa.numero);
-                    const resultado = await whatsappService.sendMessage(
-                        // Extrair codpais, ddd e numero do número de origem (conversa.numero)
-                        codpais,
-                        ddd,
-                        num,
-                        numeroDestino, // número de destino
-                        mensagem.mensagem, // mensagem
-                        browserId // browserId do cliente
-                    );
-                    
-                    if (resultado.success) {
-                        console.log(`✅ Mensagem ${mensagemId} enviada de ${conversa.numero} para ${numeroDestino}`);
-                    } else {
-                        console.log(`❌ Erro ao enviar mensagem ${mensagemId} para ${numeroDestino}: ${resultado.message}`);
-                    }
-                }
-                
-            } catch (error) {
-                console.error('Erro ao enviar mensagem:', error);
+
+        // Round-robin: um destino por tick
+        const dispositivo = conversa.dispositivos[conversa.targetIndex % conversa.dispositivos.length];
+        conversa.targetIndex = (conversa.targetIndex + 1) % conversa.dispositivos.length;
+
+        try {
+            const numeroDestino = `${dispositivo.codpais}${dispositivo.ddd}${dispositivo.numero}`;
+
+            // Validar se destino está conectado e ativo
+            const conectados = this.whatsappService.getConnectedNumbers().map(c => c.realNumber);
+            const destinoConectado = conectados.includes(numeroDestino);
+            const saldoDestino = await this.verificarSaldo(numeroDestino);
+            const destinoAtivo = saldoDestino > 0;
+            if (!destinoConectado || !destinoAtivo) {
+                console.log(`⏭️ Pulando envio para ${numeroDestino} (conectado=${destinoConectado}, ativo=${destinoAtivo})`);
+                return;
             }
+
+            // Delay aleatório 10-30s antes de enviar
+            const delayMs = (Math.floor(Math.random() * 20) + 10) * 1000;
+            
+            await new Promise(r => setTimeout(r, delayMs));
+
+            // Simulado
+            const isSimulado = ['999999999', '888888888', '777777777'].includes(dispositivo.numero);
+            if (isSimulado) {
+                console.log(`📱 [SIMULADO] Mensagem ${mensagemId} de ${conversa.numero} para ${numeroDestino}: ${mensagem.mensagem}`);
+                return;
+            }
+
+            // Envio real
+            const { codpais, ddd, numero: num } = this.extrairComponentesNumero(conversa.numero);
+            const resultado = await this.whatsappService.sendMessage(
+                codpais,
+                ddd,
+                num,
+                numeroDestino,
+                mensagem.mensagem,
+                browserId
+            );
+
+            if (resultado.success) {
+                console.log(`✅ Mensagem ${mensagemId} enviada de ${conversa.numero} para ${numeroDestino}`);
+            } else {
+                console.log(`❌ Erro ao enviar mensagem ${mensagemId} para ${numeroDestino}: ${resultado.message}`);
+            }
+        } catch (error) {
+            console.error('Erro ao enviar mensagem:', error);
+        }
+    }
+
+    // Handler de mensagem recebida para resposta automática
+    async onIncomingMessage(receiverBrowserId, fromRaw, toRaw, body) {
+        try {
+            console.log('[onIncomingMessage] start', { receiverBrowserId, fromRaw, body });
+            // Normalizar origem e destino
+            const from = (fromRaw || '').replace('@c.us', '').replace('@g.us', '');
+            const to = this.normalizarNumeroReal(receiverBrowserId, this.conversasAtivas.get(receiverBrowserId)?.numero || this.whatsappService.getRealNumber(receiverBrowserId));
+            if (!from || !to) {
+                console.log('[onIncomingMessage] from/to inválidos', { from, to });
+                return;
+            }
+            console.log(">>>>>",from, to)
+            // Ignorar se origem == destino
+            if (from === to) {
+                console.log('[onIncomingMessage] ignorando eco (from == to)', { from });
+                return;
+            }
+
+            // Validar ambos conectados e com saldo
+            const conectados = this.whatsappService.getConnectedNumbers().map(c => c.realNumber);
+            const ambosConectados = conectados.includes(from) && conectados.includes(to);
+            const saldoFrom = await this.verificarSaldo(from);
+            const saldoTo = await this.verificarSaldo(to);
+            const ambosAtivos = saldoFrom > 0 && saldoTo > 0;
+            const receiverConnected = this.whatsappService.isConnected(receiverBrowserId);
+            if (!ambosConectados || !ambosAtivos || !receiverConnected) {
+                console.log(`[onIncomingMessage] pulado (conectados=${ambosConectados}, ativos=${ambosAtivos}, receiverConnected=${receiverConnected}) from=${from} to=${to}`);
+                return;
+            }
+
+            // Escolher mensagem aleatória
+            if (!this.mensagens || this.mensagens.length === 0) {
+                await this.carregarMensagens();
+            }
+            if (!this.mensagens || this.mensagens.length === 0) return;
+            const idx = Math.floor(Math.random() * this.mensagens.length);
+            const mensagem = this.mensagens[idx]?.mensagem || 'Ok.';
+
+            // Aguardar 10-30s antes de responder
+            const delayMs = (Math.floor(Math.random() * 20) + 10) * 1000;
+            await new Promise(r => setTimeout(r, delayMs));
+            
+
+            // Enviar resposta do receptor (to) para o remetente (from)
+            const { codpais, ddd, numero } = this.extrairComponentesNumero(to);
+            const result = await this.whatsappService.sendMessage(codpais, ddd, numero, from, mensagem, receiverBrowserId);
+            if (result?.success) {
+                console.log(`🤖 Auto-reply ${to} -> ${from}: ${mensagem}`);
+                // Consumir saldo do respondente
+                await this.consumirSaldo(to, 1/60);
+            } else {
+                console.log('[onIncomingMessage] falha no sendMessage', result);
+            }
+        } catch (e) {
+            console.warn('Erro em onIncomingMessage:', e?.message || e);
         }
     }
 
@@ -256,6 +335,8 @@ class ConversasService {
         } catch (error) {
             console.error('Erro ao verificar saldo:', error);
             return 0;
+        } finally {
+            client.release(); // <-- LIBERAR SEMPRE
         }
     }
 
@@ -274,6 +355,8 @@ class ConversasService {
             await client.query(query, [codpais, ddd, num, minutos]);
         } catch (error) {
             console.error('Erro ao consumir saldo:', error);
+        } finally {
+            client.release(); // <-- LIBERAR SEMPRE
         }
     }
 
@@ -291,6 +374,8 @@ class ConversasService {
             await client.query(query, [codpais, ddd, num, delta]);
         } catch (error) {
             console.error('Erro ao atualizar conversas ativas:', error);
+        } finally {
+            client.release(); // <-- LIBERAR SEMPRE
         }
     }
 
@@ -366,6 +451,8 @@ class ConversasService {
         } catch (error) {
             console.error('Erro ao adicionar crédito:', error);
             return false;
+        } finally {
+            client.release(); // <-- LIBERAR SEMPRE
         }
     }
 

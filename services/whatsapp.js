@@ -2,6 +2,7 @@ const { Client, NoAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode');
 const fs = require('fs');
 const path = require('path');
+const conversasService = require('./conversas');
 
 class WhatsAppService {
   constructor() {
@@ -245,9 +246,11 @@ class WhatsAppService {
       // Aqui você pode implementar a lógica de processamento de mensagens
       // Por exemplo, verificar saldo, limites, etc.
 
-      // Resposta automática simples
-      if (message.body.toLowerCase() === 'oi' || message.body.toLowerCase() === 'olá') {
-        await message.reply('Olá! Bem-vindo ao sistema de aquecedor WhatsApp.');
+      // Encaminhar para o serviço de conversas para resposta automática com regras
+      try {
+        await conversasService.onIncomingMessage(browserId, message.from, message.to, message.body);
+      } catch (e) {
+        console.warn('Falha ao processar onIncomingMessage:', e?.message || e);
       }
     });
 
